@@ -25,7 +25,7 @@ int main(int argc, char** argv){
 	};
 //	char buffer[BUFFER_SIZE];
 	struct msg {
-		char buffer[BUFFER_SIZE];
+		std::string buffer[BUFFER_SIZE];
 		int num;
 	};
 	sockaddr_in addr;
@@ -81,7 +81,7 @@ int main(int argc, char** argv){
 			std::cerr<<("recvfrom error")<<std::endl;
 			return 1;
 		}
-		
+		std::cout<<"aaa"<<std::endl;
 		std::cout<<"message: "<<msg_var.buffer<<std::endl;
 		std::cout<<"from:    "<<inet_ntoa(addr.sin_addr)<<std::endl;
 		std::cout<<"on port: "<<port<<std::endl;

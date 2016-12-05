@@ -6,7 +6,6 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <string>
-#include <string.h>
 #include <unistd.h>
 #include <signal.h>
 
@@ -21,7 +20,7 @@ void sighandler (int signal) {
 
 struct msg {
 	int num; 						// numerazione del pacchetto
-	char messaggio[50];		// messaggio
+	std::string messaggio;				// messaggio
 };
 
 struct ack {
@@ -48,7 +47,6 @@ int main(int argc, char** argv){
 	
 	//stringhe di supporto
 	char* nummsg;
-	char* numack; 
 	
 	int i=0;
 	
@@ -79,13 +77,11 @@ int main(int argc, char** argv){
 		// inizializzo messaggio da inviare;
 		std::string m;
 		std::cout<<"write here the message"<<std::endl;
+		
 		std::getline(std::cin, m, '\n');
-		std::cout<<"jjfkdsj";
-		strcpy(msg_var.messaggio,m.c_str());
+
+		msg_var.messaggio = m;
 		msg_var.num=i;
-		
-		
-		sprintf(nummsg,"%d",msg_var.num);
 		
 
 		sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -105,29 +101,32 @@ int main(int argc, char** argv){
 				alarm(TIMEOUT);
 				recvfrom(sockfd, static_cast<void*>(&ack_var), sizeof(ack), 0, (sockaddr*)&addr,  NULL);	
 				
-				sprintf(numack,"%d",ack_var.num);
 						
-				if(resend_flag ==false && strcmp(ack_var.msg,strcat("ack",numack)) == 0   ) { // ack ricevuto in tempo e con giusti valori
+				std::string ack("ack");
+				ack += std::to_string(ack_var.num);
+				if(resend_flag ==false && ack_var.msg == ack ) { // ack ricevuto in tempo e con giusti valori
 					std::cout<<"ack"<<ack_var.num<<" received"<<std::endl;
 					
-					
-					sprintf(numack,"%d",ack_var.num);
+		
 					i++; // tutto ok passa al prossimo messaggio
 					
 					break;
 				}
 				else 
-				// rimanda il messaggio
+				// rimanda il messaggio	
 					sendto(sockfd, static_cast<void*>(&msg_var), sizeof(msg), 0, (sockaddr*)&addr, sizeof(addr));
 			}
 							
 		}
-		else
+		else{
 		//messaggio ricevuto
-			if(strcmp(ack_var.msg,strcat("ack",numack)) == 0) {
+			std::string ack1("ack");
+			ack1 += std::to_string(ack_var.num);
+			if(ack_var.msg == ack1 == 0) {
 				std::cout<<"ack"<<ack_var.num<<" received"<<std::endl;
 				i++; // ok passo al prossimo;
 			}
+		}
 		
 	}
 	return 0;
