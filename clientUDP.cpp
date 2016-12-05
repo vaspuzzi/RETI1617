@@ -24,7 +24,7 @@ struct msg {
 };
 
 struct ack {
-		char msg[4];
+		std::string msg;
 		int num;
 	};
 

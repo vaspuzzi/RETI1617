@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <getopt.h>
-#include <string.h>
+#include <string>
 #include <stdlib.h>
 #include <signal.h>
 
@@ -20,12 +20,12 @@ int main(int argc, char** argv){
 	char* from = NULL;	
 //	char* ack = "ack"; 
 	struct ack {
-		char msg[5]; // "ack1\0"
+		std::string msg; // "ack1\0"
 		int num;
 	};
 //	char buffer[BUFFER_SIZE];
 	struct msg {
-		std::string buffer[BUFFER_SIZE];
+		std::string buffer;
 		int num;
 	};
 	sockaddr_in addr;
@@ -74,15 +74,17 @@ int main(int argc, char** argv){
 
 	//main loop
 	while(1){
-		
+
 		// ricezione messaggio in msg_var
 		n=recvfrom(sockfd, static_cast<void*>(&msg_var), sizeof(msg), 0, (sockaddr*)&addr, &len);
 		if(n < 0){
 			std::cerr<<("recvfrom error")<<std::endl;
 			return 1;
 		}
-		std::cout<<"aaa"<<std::endl;
-		std::cout<<"message: "<<msg_var.buffer<<std::endl;
+
+		msg mess = msg_var;
+
+		std::cout<<"message: "<<mess.buffer<<std::endl;
 		std::cout<<"from:    "<<inet_ntoa(addr.sin_addr)<<std::endl;
 		std::cout<<"on port: "<<port<<std::endl;
 
@@ -92,7 +94,9 @@ int main(int argc, char** argv){
     	sprintf(nummsg,"%d",msg_var.num);
 		
 		// inizializzo ack_var, da inviare come risposta al server
-		strcpy(ack_var.msg,strcat("ack",nummsg));  // inizializzo ack_var con stringa "ack1", "ack2" ecc...
+		std::string s=("ack");
+		s += std::to_string(msg_var.num);
+		ack_var.msg=s;  // inizializzo ack_var con stringa "ack1", "ack2" ecc...
 		ack_var.num=msg_var.num;
 		
 		// invio
