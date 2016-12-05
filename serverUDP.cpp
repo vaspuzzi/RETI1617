@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <getopt.h>
+#include <string.h>
 #include <stdlib.h>
 #include <signal.h>
 
@@ -19,19 +20,20 @@ int main(int argc, char** argv){
 	char* from = NULL;	
 //	char* ack = "ack"; 
 	struct ack {
-		const char msg[5]; // "ack1\0"
+		char msg[5]; // "ack1\0"
 		int num;
 	};
 //	char buffer[BUFFER_SIZE];
 	struct msg {
-		const char buffer[BUFFER_SIZE];
+		char buffer[BUFFER_SIZE];
 		int num;
 	};
 	sockaddr_in addr;
-	bool flag_verbose = false;
 	
 	msg msg_var;
 	ack ack_var;
+	
+	char* nummsg;
 	
 
 	//option retrieving
@@ -74,7 +76,7 @@ int main(int argc, char** argv){
 	while(1){
 		
 		// ricezione messaggio in msg_var
-		n=recvfrom(sockfd, msg_var, sizeof(msg), 0, (sockaddr*)&addr, &len);
+		n=recvfrom(sockfd, static_cast<void*>(&msg_var), sizeof(msg), 0, (sockaddr*)&addr, &len);
 		if(n < 0){
 			std::cerr<<("recvfrom error")<<std::endl;
 			return 1;
@@ -86,13 +88,15 @@ int main(int argc, char** argv){
 
 		std::cout<<"press a key to send the ack"<<std::endl;
     	std::cin.get(); 
+    	
+    	sprintf(nummsg,"%d",msg_var.num);
 		
 		// inizializzo ack_var, da inviare come risposta al server
-		strcpy(ack_var.msg,strcat("ack",msg_var.num));  // inizializzo ack_var con stringa "ack1", "ack2" ecc...
-		ack.num=msg_var.num;
+		strcpy(ack_var.msg,strcat("ack",nummsg));  // inizializzo ack_var con stringa "ack1", "ack2" ecc...
+		ack_var.num=msg_var.num;
 		
 		// invio
-		n = sendto(sockfd, ack_var, sizeof(ack), 0, (sockaddr*)&addr,  sizeof(addr);
+		n = sendto(sockfd, static_cast<void*>(&ack_var), sizeof(ack), 0, (sockaddr*)&addr,  sizeof(addr));
 		if(n < 0){
 			std::cerr<<("recvfrom error")<<std::endl;
 			return 1;
