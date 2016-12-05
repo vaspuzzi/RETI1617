@@ -5,19 +5,33 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #define BUFFER_SIZE 50
+
+
 
 int main(int argc, char** argv){
 	
 	int sockfd, n;
 	int port = 259990;
 	unsigned int len;
-	char* from = NULL;
-	char* ack = "ack"; 
-	char buffer[BUFFER_SIZE];
+	char* from = NULL;	
+//	char* ack = "ack"; 
+	struct ack {
+		const char msg[5]; // "ack1\0"
+		int num;
+	};
+//	char buffer[BUFFER_SIZE];
+	struct msg {
+		const char buffer[BUFFER_SIZE];
+		int num;
+	};
 	sockaddr_in addr;
 	bool flag_verbose = false;
+	
+	msg msg_var;
+	ack ack_var;
 	
 
 	//option retrieving
@@ -26,6 +40,7 @@ int main(int argc, char** argv){
 		switch(option){
 			case '\1':break;
 			case 'h' :from = optarg;					break;
+			case 'a' :break;
 			case 'f' :break;
 			case 'r' :break;
 			case 'w' :break;
@@ -57,20 +72,27 @@ int main(int argc, char** argv){
 
 	//main loop
 	while(1){
-		n=recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (sockaddr*)&addr, &len);
+		
+		// ricezione messaggio in msg_var
+		n=recvfrom(sockfd, msg_var, sizeof(msg), 0, (sockaddr*)&addr, &len);
 		if(n < 0){
 			std::cerr<<("recvfrom error")<<std::endl;
 			return 1;
 		}
-
-		std::cout<<"message: "<<buffer<<std::endl;
+		
+		std::cout<<"message: "<<msg_var.buffer<<std::endl;
 		std::cout<<"from:    "<<inet_ntoa(addr.sin_addr)<<std::endl;
 		std::cout<<"on port: "<<port<<std::endl;
 
 		std::cout<<"press a key to send the ack"<<std::endl;
     	std::cin.get(); 
-
-		n = sendto(sockfd, ack, sizeof(ack), 0, (sockaddr*)&addr,  sizeof(addr);
+		
+		// inizializzo ack_var, da inviare come risposta al server
+		strcpy(ack_var.msg,strcat("ack",msg_var.num));  // inizializzo ack_var con stringa "ack1", "ack2" ecc...
+		ack.num=msg_var.num;
+		
+		// invio
+		n = sendto(sockfd, ack_var, sizeof(ack), 0, (sockaddr*)&addr,  sizeof(addr);
 		if(n < 0){
 			std::cerr<<("recvfrom error")<<std::endl;
 			return 1;
